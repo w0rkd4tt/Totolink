@@ -594,7 +594,7 @@ Cả hai lỗ hổng CVE-2025-52053 và CVE-2025-52046 đều là những ví d�
 ## Tham Khảo
 
 - [Totolink Official Website](https://www.totolink.net/)
-- [PhieuLang Docs](https://github.com/phieulang1993/emu/tree/master/emu_arm)
+- [phieulang emu](https://github.com/phieulang1993/emu/tree/master/emu_arm)
 - OWASP Command Injection Prevention Cheat Sheet
 - QEMU Documentation for ARM64 Architecture
 
