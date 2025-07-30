@@ -332,16 +332,16 @@ docker run -it -p 8080:8080 arm64v8/ubuntu:18.04
 Lỗ hổng nằm trong chức năng `setNtpCfg` xử lý cấu hình NTP (Network Time Protocol) của thiết bị:
 
 1. **Binary shttp**: Hàm `sub_4184C0` nhận tham số `tz` (timezone) từ request HTTP
-![image.png](setNtpCfg%2020e8aff2dc8b80a3afafef36b48f7496/image.png)
+![image.png](CVE-2025-52284/setNtpCfg%2020e8aff2dc8b80a3afafef36b48f7496/image.png)
 
 
 2. Giá trị này được truyền vào `Uci_Set_Str` để lưu vào cấu hình UCI
 
-![image.png](setNtpCfg%2020e8aff2dc8b80a3afafef36b48f7496/image%201.png)
+![image.png](CVE-2025-52284/setNtpCfg%2020e8aff2dc8b80a3afafef36b48f7496/image%201.png)
 
 3. Sau đó gọi hàm `set_timezone_to_kernel` trong `libcscommon.so`
 
-![image.png](setNtpCfg%2020e8aff2dc8b80a3afafef36b48f7496/image%202.png)
+![image.png](CVE-2025-52284/setNtpCfg%2020e8aff2dc8b80a3afafef36b48f7496/image%202.png)
 
 4. **Binary libcscommon.so**: Hàm `set_timezone_to_kernel`:
    - Đọc lại giá trị timezone từ UCI bằng `uci_get_str`
@@ -377,9 +377,9 @@ Connection: close
 
 **PoC**
 
-![image.png](setNtpCfg%2020e8aff2dc8b80a3afafef36b48f7496/image%203.png)
+![image.png](CVE-2025-52284/setNtpCfg%2020e8aff2dc8b80a3afafef36b48f7496/image%203.png)
 
-![image.png](setNtpCfg%2020e8aff2dc8b80a3afafef36b48f7496/image%204.png)
+![image.png](CVE-2025-52284/setNtpCfg%2020e8aff2dc8b80a3afafef36b48f7496/image%204.png)
 
 
 
