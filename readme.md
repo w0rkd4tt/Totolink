@@ -1,4 +1,6 @@
-# Phân Tích Lỗ Hổng Command Injection CVE-2025-52284 Trên Totolink X6000R
+# Phân Tích Lỗ Hổng Command Injection [CVE-2025-52284](https://www.tenable.com/cve/CVE-2025-52284) Trên Totolink X6000R
+
+
 
 ## Giới Thiệu
 
