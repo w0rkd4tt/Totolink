@@ -1,0 +1,12 @@
+# macOS system files
+.DS_Store
+
+# Backup or binary data files
+*.burp
+*.iso
+*.rar
+
+# Optionally ignore this if it's a text-based output
+uk.txt
+liblucihttp.so.0.1
+uk.rar
