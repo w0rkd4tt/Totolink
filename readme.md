@@ -13,7 +13,7 @@ Trong bài viết này, tôi sẽ chia sẻ về quá trình phát hiện và kh
 - **Phiên bản firmware**: V9.4.0cu.1360_B20241207
 - **Loại lỗ hổng**: Command Injection
 - **Mức độ nghiêm trọng**: Cao (không cần xác thực)
-- **Phát hiện bởi**: dtro và datnlq từ VietSunshine Cyber Security Services
+- **Phát hiện bởi**: dtro và datnlq từ CC Team
 
 ## Thiết Lập Môi Trường Lab
 
@@ -516,7 +516,7 @@ CVE-2025-52046 là một lỗ hổng Command Injection nghiêm trọng được 
 - **Tham số khai thác**: `mac`, `desc`
 - **Mức độ nghiêm trọng**: Cao (không cần xác thực)
 - **Link tải firmware**: [https://www.totolink.net/data/upload/20250515/8c0a04842e9e10188d0822b7b19cf212.web](https://www.totolink.net/data/upload/20250515/8c0a04842e9e10188d0822b7b19cf212.web)
-- **Phát hiện bởi**: Hiw0rl4 và Phl từ VietSunshine Cyber Security Services
+- **Phát hiện bởi**: Hiw0rl4 và Phl từ CC Team
 
 ## Phân Tích Chi Tiết
 
